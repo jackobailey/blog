@@ -1,0 +1,23 @@
+[
+  {
+    "objectID": "posts/welcome/index.html",
+    "href": "posts/welcome/index.html",
+    "title": "First Post",
+    "section": "",
+    "text": "This is the first post in a Quarto blog. Welcome!\nSince this post doesn’t specify an explicit image, the first image in the post will be used in the listing page of posts."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Blog Posts",
+    "section": "",
+    "text": "First Post\n\n\n\n\n\n\n\nNews\n\n\n\n\nAdd your description here\n\n\n\n\n\n\nJul 30, 2023\n\n\nJack Bailey\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "Hi, I’m Jack Bailey.\nI’m a political scientist and Lecturer in Quantitative Politics at the University of Manchester in the UK.\nMy research has three aims. First, to understand how economics affects voting behaviour. Second, to study how politics differs across time and space. And, third, to improve political methods.\nI’ve published my research in a number of different peer-reviewed journals. To read my work, check my page on Google Scholar. Likewise, if you want to know more about me, you can find a copy of my CV here.\nI love communicating political science to the general public. So I’m more-or-less open to any media request you might have. To set something up, either contact Manchester’s Media Relations team or send me an email."
+  }
+]

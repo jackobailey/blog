@@ -1,0 +1,30 @@
+project:
+  type: website
+  output-dir: docs
+
+website:
+  title: "Jack Bailey"
+  site-url: https://www.jack-bailey.co.uk
+  description: "Dr Jack Bailey, Political Scientist"
+  navbar:
+    right:
+      - about.qmd
+      - icon: github
+        href: http://github.com/jackobailey
+      - icon: twitter
+        href: https://twitter.com/PoliSciJack
+      - icon: linkedin
+        href: https://www.linkedin.com/in/jack-bailey-776221227/
+      - icon: rss
+        href: index.xml
+format:
+  html:
+    theme: united
+    mainfont: Cabin
+    fontcolor: "#111111"
+    css: styles.css
+    header-includes: |
+      <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/cabin" type="text/css"/>
+
+editor: visual
+

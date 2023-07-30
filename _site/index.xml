@@ -1,0 +1,34 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<rss  xmlns:atom="http://www.w3.org/2005/Atom" 
+      xmlns:media="http://search.yahoo.com/mrss/" 
+      xmlns:content="http://purl.org/rss/1.0/modules/content/" 
+      xmlns:dc="http://purl.org/dc/elements/1.1/" 
+      version="2.0">
+<channel>
+<title>Jack Bailey</title>
+<link>https://www.jack-bailey.co.uk/index.html</link>
+<atom:link href="https://www.jack-bailey.co.uk/index.xml" rel="self" type="application/rss+xml"/>
+<description>Dr Jack Bailey, Political Scientist</description>
+<generator>quarto-1.3.353</generator>
+<lastBuildDate>Sat, 29 Jul 2023 23:00:00 GMT</lastBuildDate>
+<item>
+  <title>First Post</title>
+  <dc:creator>Jack Bailey</dc:creator>
+  <link>https://www.jack-bailey.co.uk/posts/welcome/index.html</link>
+  <description><![CDATA[ 
+
+
+
+
+<p>This is the first post in a Quarto blog. Welcome!</p>
+<p>Since this post doesn’t specify an explicit <code>image</code>, the first image in the post will be used in the listing page of posts.</p>
+
+
+
+ ]]></description>
+  <category>News</category>
+  <guid>https://www.jack-bailey.co.uk/posts/welcome/index.html</guid>
+  <pubDate>Sat, 29 Jul 2023 23:00:00 GMT</pubDate>
+</item>
+</channel>
+</rss>
