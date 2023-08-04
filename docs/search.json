@@ -1,45 +1,10 @@
 [
   {
-    "objectID": "index.html",
-    "href": "index.html",
-    "title": "Blog Posts",
-    "section": "",
-    "text": "Introducing Shannon Regression\n\n\n\n\n\n\n\nStatistics\n\n\nInformation Theory\n\n\n\n\nAn Information Theoretic Alternative to Logistic and Probit Regression for Binary Outcomes\n\n\n\n\n\n\nAug 4, 2023\n\n\nJack Bailey\n\n\n\n\n\n\nNo matching items"
-  },
-  {
-    "objectID": "about.html",
-    "href": "about.html",
-    "title": "About",
-    "section": "",
-    "text": "Hi, I’m Jack Bailey.\nI’m a political scientist and Lecturer in Quantitative Politics at the University of Manchester in the UK.\nMy research has three aims. First, to understand how economics affects voting behaviour. Second, to study how politics differs across time and space. And, third, to improve political methods.\nI’ve published my research in a number of different peer-reviewed journals. To read my work, check my page on Google Scholar. Likewise, if you want to know more about me, you can find a copy of my CV here.\nI love communicating political science to the general public. So I’m more-or-less open to any media request you might have. To set something up, either contact The University of Manchester’s Media Relations team or send me an email."
-  },
-  {
     "objectID": "posts/shannon_regression/index.html",
     "href": "posts/shannon_regression/index.html",
     "title": "Introducing Shannon Regression",
     "section": "",
     "text": "I suspect few political scientists spend time dwelling on information theory. But, over the past year, I’ve spent a lot of time reading and thinking about it. And I am beginning to believe that it has a lot to offer the study of social and political systems.\nI’ve found two books on the subject most enlightening. The first is James V. Stone’s “Information Theory: A Tutorial Introduction”. The second is Jimmy Soni and Rob Goodman’s “A Mind at Play: How Claude Shannon Invented the Information Age”. Together they provide a guide to the basics of information theory and its development as a field.\nInformation theory owes its existence to one man: Claude Shannon. Shannon more or less invented the field, then solved its most pressing problems, in his landmark paper “A Mathematical Theory of Communication”. Information theory concerns communications first and foremost. But, really, it’s all about probability. As such, we can apply its insight to any other system that also involves probabilistic outcomes.\nIn this vain, this blog describes a new type of regression model that I’ve developed. Like logistic or probit regression, it serves to model binary outcomes. But, unlike logistic or probit regression, it uses Shannon’s information content as its link function. This the model – which I call “Shannon regression” – some useful properties. In particular, that it measures coefficients in bits.\nI’ll probably write a paper on the method once I understand it better. But I am keen to get it out there so that others can use it and so that I can get some feedback. So, for now, this blog will serve as a kind of way marker. Both for myself, so that I can develop a better understanding of the model, and for others, who might find the project interesting and useful."
-  },
-  {
-    "objectID": "posts/shannon_regression/index.html#estimating-p-in-theory",
-    "href": "posts/shannon_regression/index.html#estimating-p-in-theory",
-    "title": "Introducing Shannon Regression",
-    "section": "Estimating \\(P^{*}\\) in Theory",
-    "text": "Estimating \\(P^{*}\\) in Theory\nLet’s start by turning the simple model above into a generative one that we could use to model real-world data. We’ll assume that we’re working at the aggregate level, but much of what we work out will apply to the individual level too.\nMost of these analyses derive \\(R\\) from survey questions that ask things like “Are we spending too much, too little, or about the right amount on Welfare”. More often than not, they measure \\(R\\) as the percentage of respondents who want more of some policy minus those who want less.1\nTechnically, these “net differences” are bound by \\(-100\\%\\) and \\(+100\\%\\). But as most of the action likely occurs in the middle of the scale, we’ll assume that they’re normally-distributed in this case. More formally, we’ll assume that:\n\\[\n\\begin{align*}\nR_{t} &\\sim \\mathrm{Normal}(\\mu, \\sigma)\n\\end{align*}\n\\]\nWhere \\(\\mu\\) is the variable’s mean and \\(\\sigma\\) its standard deviation. Note also that we’ve added the subscript \\(t\\) to \\(R\\) to show that it changes over time.\nWe also know something else : that we want to model \\(R_{t}\\) as some function of the difference between \\(P^{*}_{t}\\) and \\(P_{t}\\). In principle, this function could take any character. But, for now, we’ll assume that \\(R_{t}\\) is some linear function of \\(P^{*}_{t} - P{t}\\). We don’t need to include an intercept term here (the thresholds \\(\\tau\\) deal with that). But we do need to include a slope that, in effect, serves to convert the items on the right-hand side of the equation (that are measured in currency units) into the ordered units on the left-hand side of the equation. This gives:\n\\[\n\\begin{align*}\nR_{t} &\\sim \\mathrm{Ordered}(\\phi_{t}, \\tau) \\\\\n\\phi_{t} &= \\beta(P^{*}_{t} - P_{t})\n\\end{align*}\n\\]\nWe could do all of this in a Frequentist framework. But it’s 2023 and no one really understand Frequentism anyway, so we’ll use a Bayesian framework instead. The nice thing about Bayes is that it makes no distinction between data and parameters. Data are just parameters that we observe. So while we might not observe \\(P^{*}_{t}\\), we can just treat it as an unobserved parameter and use our model and our data to measure it instead.\nAs it’s measured in currency units, \\(P^{*}_{t}\\) can only take values between \\(0\\) and \\(\\infty\\). One distribution that also has these properties is the log-normal distribution. But for practical reasons, this is difficult to implement in the way I’m going to below. So, for now, we’ll just model it as coming from a normal distribution:\n\\[\n\\begin{align*}\nR_{t} &\\sim \\mathrm{Ordered}(\\phi_{t}, \\tau) \\\\\n\\phi_{t} &= \\beta(P^{*}_{t} - P_{t}) \\\\\nP^{*}_{t} &\\sim \\text{Normal}(\\mu, \\sigma)\n\\end{align*}\n\\]\nThere are probably all sorts of ways that we could model \\(P^{*}_{t}\\). But they’re beyond the scope of this post. For now, let’s just remain agnostic and model it as a function of some constant, \\(\\alpha\\) and some non-linear function that changes over time, \\(f(t)\\). This gives:\n\\[\n\\begin{align*}\nR_{t} &\\sim \\mathrm{Ordered}(\\phi_{t}, \\tau) \\\\\n\\phi_{t} &= \\beta(P^{*}_{t} - P_{t}) \\\\\nP^{*}_{t} &\\sim \\text{Normal}(\\mu, \\sigma) \\\\\n\\mu_{t} &= \\alpha + f(t)\n\\end{align*}\n\\]"
-  },
-  {
-    "objectID": "posts/shannon_regression/index.html#estimating-p-in-practice",
-    "href": "posts/shannon_regression/index.html#estimating-p-in-practice",
-    "title": "Introducing Shannon Regression",
-    "section": "Estimating \\(P^{*}\\) in Practice",
-    "text": "Estimating \\(P^{*}\\) in Practice\nNow we have a model, we can fit it to some data. I’m going to use two sources. To measure relative policy preference, \\(R_{t}\\), I’ll use data from the US General Social Survey. And to measure how much policy the public is getting, \\(P_{t}\\), I’ll use the replication data from Chris’ book with Stuart Soroka, Degrees of Democracy.\nIn terms of doing the actual modelling, we’ll use brms, which has a great non-linear syntax that we can use to specify our model.\n\n\nCode\n# model_formula &lt;- \n#   bf(\n#     r ~ b * (pstar - p),\n#     pstar ~ 1 + s(t),\n#     b ~ 1,\n#     nl = TRUE\n#   )"
-  },
-  {
-    "objectID": "posts/shannon_regression/index.html#footnotes",
-    "href": "posts/shannon_regression/index.html#footnotes",
-    "title": "Introducing Shannon Regression",
-    "section": "Footnotes",
-    "text": "Footnotes\n\n\nThat the middle category is ignored in this case is a problem. For example, such a measure would give a score of \\(0\\) where the public is evenly split between wanting more or less spending and where everyone thinks things are fine as they are. This seems less than ideal and scholars of this literature would probably be better off modelling the data as ordinal. But, either way, I’ll stick to the convention to make my broader point.↩︎"
   },
   {
     "objectID": "posts/shannon_regression/index.html#understanding-information-content",
@@ -61,5 +26,19 @@
     "title": "Introducing Shannon Regression",
     "section": "Conclusion",
     "text": "Conclusion\nOne response to all of this might be: so what? That’s fair enough. I certainly don’t expect people to read this post then switch to using Shannon regression en masse. That said, I do think that there are certain use cases where using Shannon regression might make sense.\nTo me, the most obvious use case is scenarios which already involve information theoretic quantities. Here, computing effect sizes in bits might prove useful as it would mean that parameter estimates and quantities of interest share a common scale. Likewise, it might be possible to use Shannon regression to decompose sets of outcomes and predictors into known information theoretic quantities.\nBut, ultimately, I don’t care what the use case is. And I’m sure I have missed some that are blindingly obvious. Shannon regression is neat whatever the case and by putting it out into the world it’ll hopefully find a use in its own time."
+  },
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "Blog Posts",
+    "section": "",
+    "text": "Introducing Shannon Regression\n\n\n\n\n\n\n\nStatistics\n\n\nInformation Theory\n\n\n\n\nAn Information Theoretic Alternative to Logistic and Probit Regression for Binary Outcomes\n\n\n\n\n\n\nAug 4, 2023\n\n\nJack Bailey\n\n\n\n\n\n\nNo matching items"
+  },
+  {
+    "objectID": "about.html",
+    "href": "about.html",
+    "title": "About",
+    "section": "",
+    "text": "Hi, I’m Jack Bailey.\nI’m a political scientist and Lecturer in Quantitative Politics at the University of Manchester in the UK.\nMy research has three aims. First, to understand how economics affects voting behaviour. Second, to study how politics differs across time and space. And, third, to improve political methods.\nI’ve published my research in a number of different peer-reviewed journals. To read my work, check my page on Google Scholar. Likewise, if you want to know more about me, you can find a copy of my CV here.\nI love communicating political science to the general public. So I’m more-or-less open to any media request you might have. To set something up, either contact The University of Manchester’s Media Relations team or send me an email."
   }
 ]
