@@ -1,0 +1,215 @@
+---
+title: "Introducing Shannon Regression"
+code-fold: false
+author:
+  - name: Jack Bailey
+    # url: https://example.com/norajones
+    # affiliation: Spacely Sprockets
+    # affiliation-url: https://example.com/spacelysprokets
+date: "2023-08-04"
+# date-modified: "5/23/2021"
+description: |
+  An Information Theoretic Alternative to Logistic and Probit Regression for Binary Outcomes
+freeze: true
+execute: 
+  echo: false
+categories: [Statistics, Information Theory]
+draft: false
+---
+
+```{r}
+#| label: setup
+#| echo: false
+#| message: false
+
+# Load packages
+
+library(modelsummary)
+library(tidyverse)
+
+
+# Set random seed
+
+set.seed(666)
+```
+
+I suspect few political scientists spend time dwelling on information theory. But, over the past year, I've spent a lot of time reading and thinking about it. And I am beginning to believe that it has a lot to offer the study of social and political systems.
+
+I've found two books on the subject most enlightening. The first is [James V. Stone's "Information Theory: A Tutorial Introduction"](https://jamesstone.sites.sheffield.ac.uk/books/information-theory). The second is [Jimmy Soni and Rob Goodman's "A Mind at Play: How Claude Shannon Invented the Information Age"](https://www.simonandschuster.com/books/A-Mind-at-Play/Jimmy-Soni/9781476766690). Together they provide a guide to the basics of information theory and its development as a field.
+
+Information theory owes its existence to one man: Claude Shannon. Shannon more or less invented the field, then solved its most pressing problems, in his landmark paper ["A Mathematical Theory of Communication"](https://ieeexplore.ieee.org/document/6773024). Information theory concerns communications first and foremost. But, really, it's all about probability. As such, we can apply its insight to any other system that also involves probabilistic outcomes.
+
+In this vain, this blog describes a new type of regression model that I've developed. Like logistic or probit regression, it serves to model binary outcomes. But, unlike logistic or probit regression, it uses Shannon's information content as its link function. This the model -- which I call "Shannon regression" -- some useful properties. In particular, that it measures coefficients in bits.
+
+I'll probably write a paper on the method once I understand it better. But I am keen to get it out there so that others can use it and so that I can get some feedback. So, for now, this blog will serve as a kind of way marker. Both for myself, so that I can develop a better understanding of the model, and for others, who might find the project interesting and useful.
+
+## Understanding Information Content
+
+To understand Shannon regression, you need to know what information is and how we measure it. If that's something you know, feel free to skip to the next section. If not, let's take a moment to spell it all out.
+
+We measure information in "bits". By definition, 1 bit of information is enough to reduce uncertainty by half. For example, imagine that I toss a fair coin in the air, then prevent you from seeing how it lands. Before you see the coin, you have a 50/50 chance of guessing how it landed. I then reveal that the result is a head. As such, the probabilities change. Because you know how the coin landed, you are certain to guess correctly. You went from choosing between two possible outcomes to one. In other words, your uncertainty halved. Such is the power of 1 bit of information.
+
+To compute the information of some event is straightforward. And this is true no matter whether we're talking about a coin toss or any other probabilistic event. All we need to do is to use the equation for Shannon's information content:
+
+$$
+I(p) = -\mathrm{log}_{2}p
+$$
+
+Likewise, we can convert bits of information back into probabilities using the following exponentiation:
+
+$$
+p = 2^{-I}
+$$
+
+You might ask "why bother?". Basically every single advancement in the information age is one reason. Another is that doing yields nice properties that can be useful in certain contexts. Chief among them is that when probabilities are multiplicative, information is additive. For instance, the chance of guessing 1 head is $\frac{1}{2}$, 2 heads is $\frac{1}{2} \times \frac{1}{2} = \frac{1}{4}$, and 3 heads is $\frac{1}{2} \times \frac{1}{2} \times \frac{1}{2} = \frac{1}{8}$. The amount of information you'd need, on the other hand, is just 1 bit, 2 bits, and 3 bits.
+
+This point is worth stressing: 1 bit of information if how much you'd need to guess a fair coin flip. And since information is additive, it follows that we can interpret it in terms of coin flips too.
+
+I expect most of the people reading this will be political scientists, so let's use a political example. At the 2019 UK general election, the Labour Party got 32.1% of the vote. So how much information would we need to guess that someone was a Labour voter assuming we knew nothing about them? Well $I(0.321) \approx 1.64$, so not much at all. It would take more information than we'd need to guess 1 coin flip, but less than to guess 2 in a row. What about one of the smaller parties? In 2019, UKIP got only 0.07% of the vote (yes, really). That gives $I(0.0007) \approx 10.48$ bits of information. That's a lot of information. You're more or less just as likely to guess that someone you know nothing about voted UKIP as you are to guess 10 coin flips in a row.
+
+## Building the Model
+
+Now that you know a little information theory, we can move onto the modelling. All generalised linear models use something called a "link function". As the name suggests, it is a function that links the outcome scale to some other scale. We do this because it's often hard to fit a line to the original scale, so we do it on another and transform the result between the two.
+
+Logistic regression, for instance, uses [the logit link function](https://en.wikipedia.org/wiki/Logit). The word "logit" might sound complicated, but it's really just a fancy way of saying the logarithm of the odds of some probability. Let's use a fair coin toss again as an example. Since the coin's fair, you know that the probability, $p$, that it lands heads up is 0.5. To convert this probability into logits, we just stick it into the following equation:
+
+$$
+\mathrm{logit}(p) = \mathrm{ln} \Bigl( \frac{p}{1 - p} \Bigr)
+$$
+
+Here, we first compute the odds of getting a heads, $\frac{p}{1-p} = \frac{0.5}{1 - 0.5} = 1$. Then, we run the resulting odds through the natural logarithm function, $\mathrm{ln}$, to convert it to log-odds or logits, $\mathrm{ln}(1) = 0$. These models also make use of "inverse link functions" that perform the opposite operation. For example, the inverse logit function converts logits back into probabilities. If we have some outcome that we have measured in logits, $x$, we can convert it back into probabilities as follows:
+
+$$
+\sigma(x) = \frac{1}{1 + e^{-x}}
+$$
+
+So if we sub in the answer from before we get $\sigma(x) = \frac{1}{1 + e^{-0}} = \frac{1}{1 + 1} = \frac{1}{2} = 0.5$, the probability of getting a heads on a fair coin.
+
+Other models of binary data use other link functions. The probit model uses the cumulative density function of the normal distribution. Likewise, the cauchit model uses the inverse Cauchy distribution. There is no right or wrong answer here. Different models have different properties that make them more or less useful in certain situations. But most of the time the choice comes down to habit. Economists tend to use probit because they always have done. Other social scientists tend to use logistic regression for the same reason.
+
+In practice, we can use whatever link function we want. As the name suggests, Shannon regression uses the equation for Shannon's information content as its link function:
+
+$$
+I(p) = -\mathrm{log}_{2}p
+$$
+
+And, as its inverse link, it uses the exponentiation from above that turns bits of information back into probabilities:
+
+$$
+p = 2^{-I}
+$$
+
+I thought that implementing this model was going to be really hard. But it turns out that programming custom families in `R` is really easy. All you have to do is create a function that lays it all out. I've called mine "bits" to reflect the unit of measurement:
+
+```{r}
+#| label: bit-function
+#| echo: true
+
+# Define "bit" link function
+
+bit <- 
+  function(){
+    linkfun <- function(mu) -log(mu, 2)
+    linkinv <- function(eta) 2^-eta
+    mu.eta <- function(eta) -log(2)/(2^eta)
+    valideta <- function(eta) all(is.finite(eta) & eta > 0) 
+    link <- "bit"
+    structure(
+      list(
+        linkfun = linkfun,
+        linkinv = linkinv, 
+        mu.eta = mu.eta,
+        valideta = valideta,
+        name = link
+      ),
+      class = "link-glm"
+    )
+  }
+
+```
+
+Most of this should be pretty self explanatory:
+
+-   `linkfun`: Specifies the link function
+
+-   `linkinv`: Specifies the inverse link function
+
+-   `mu.eta`: Specifies the derivative of the inverse link with respect to eta
+
+-   `valideta`: Specifies valid values that eta can take
+
+-   `link`: Specifies the name of the custom family
+
+-   `structure`: Tells the `glm` function what everything does
+
+Let's simulate some data and run the model. Given the theme of this blog post, we'll imagine that we're running an experiment involving coin flips. We recruit $n$ participants, then assign them either a 0 or a 1 at random. Those in the control group, where $t = 0$, get a fair coin where the probability of getting heads is 0.5. Those in the treatment group, where $t = 1$, get an unfair coin where the probability of getting heads is only 0.25 instead After giving our respondents their coin, we ask them to toss it, then record if they got a heads (1) or a tails (0).
+
+```{r}
+#| label: coin-sim
+#| echo: true
+
+# Specify simulation parameters
+
+n <- 10000
+fair_heads <- 0.5
+unfair_heads <- 0.25
+
+
+# Assign respondents to a treatment status
+
+treated <- 
+  sample(
+    x = 0:1,
+    size = n,
+    replace = T
+    )
+
+
+# Get coin toss outcomes
+
+outcome <- 
+  rbinom(
+    n = n,
+    size = 1,
+    prob = ifelse(treated == 1, unfair_heads, fair_heads)
+  )
+
+
+# Fit the model
+
+coin_model <- 
+  glm(
+    formula = outcome ~ 1 + treated,
+    family = binomial(link = bit())
+  )
+```
+
+Now that we've fit the model, let's check its output:
+
+```{r}
+#| label: model-summary
+#| echo: false
+
+
+modelsummary::modelsummary(
+  models = coin_model,
+  gof_map = NA
+  )
+
+```
+
+Because we used the equation for Shannon's information content as our link function, the coefficients are measured in bits of information. Like almost any model of a simple experiment, ours has an intercept and a treatment effect. Let's work out how to interpret them step by step.
+
+The intercept tells us how many bits of information we would need to guess the outcome for someone in the control group. The coefficient itself is `r round(coef(coin_model)[1], 2)`, or about 1 bit of information. This makes sense. Recall that we gave those in the treatment group a fair coin and that we need 1 bit of information to guess the outcome of a fair coin toss.
+
+The treatment effect tells us how many additional bits of information we would need to guess the outcome for someone in the treatment group. The coefficient is `r round(coef(coin_model)[2], 2)`, again about 1 bit of information. When added to the intercept, this gives `r round(sum(coef(coin_model)), 2)`, or about 2 bits of information. Again, this makes sense. We gave those in the treatment group an unfair coin that landed heads side up with probability 0.25. So to guess it right, we'd need 2 bits of information, which is how much information it takes to guess the outcome of 2 fair coin flips since $\frac{1}{2} \times \frac{1}{2} = \frac{1}{4}$.
+
+At first, it might seem unusual that the treatment caused a *negative* change in the probability of getting a head but yielded a *positive* coefficient. But it's actually quite intuitive when you think about it in information theoretic terms: all we're doing is counting up coins. And since rarer events are akin to guessing more coin flips correctly, it's takes *more* bits of information to guess *less* frequent events.
+
+## Conclusion
+
+One response to all of this might be: so what? That's fair enough. I certainly don't expect people to read this post then switch to using Shannon regression *en masse*. That said, I do think that there are certain use cases where using Shannon regression might make sense.
+
+To me, the most obvious use case is scenarios which already involve information theoretic quantities. Here, computing effect sizes in bits might prove useful as it would mean that parameter estimates and quantities of interest share a common scale. Likewise, it might be possible to use Shannon regression to decompose sets of outcomes and predictors into known information theoretic quantities.
+
+But, ultimately, I don't care what the use case is. And I'm sure I have missed some that are blindingly obvious. Shannon regression is neat whatever the case and by putting it out into the world it'll hopefully find a use in its own time.

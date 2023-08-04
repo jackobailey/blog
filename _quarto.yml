@@ -17,6 +17,10 @@ website:
         href: https://www.linkedin.com/in/jack-bailey-776221227/
       - icon: rss
         href: index.xml
+  # twitter-card:
+  #   image: thumbnail_blog.png
+  #   card-style: summary_large_image
+  #   creator: "@PoliSciJack"
 format:
   html:
     theme: united

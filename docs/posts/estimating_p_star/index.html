@@ -8,9 +8,9 @@
 
 <meta name="author" content="Jack Bailey">
 <meta name="dcterms.date" content="2023-07-30">
-<meta name="description" content="Add your description here">
+<meta name="description" content="We can use Bayes and the thermostatic model of public opinion to estimate latent policy preferences">
 
-<title>Jack Bailey - First Post</title>
+<title>Jack Bailey - Estimating P* in R = P* - P</title>
 <style>
 code{white-space: pre-wrap;}
 span.smallcaps{font-variant: small-caps;}
@@ -22,6 +22,40 @@ ul.task-list li input[type="checkbox"] {
   width: 0.8em;
   margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
   vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
 }
 </style>
 
@@ -63,6 +97,8 @@ ul.task-list li input[type="checkbox"] {
 }</script>
 <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/cabin" type="text/css">
 
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
 
 <link rel="stylesheet" href="../../styles.css">
 </head>
@@ -119,14 +155,16 @@ ul.task-list li input[type="checkbox"] {
 <header id="title-block-header" class="quarto-title-block default page-columns page-full">
   <div class="quarto-title-banner page-columns page-full">
     <div class="quarto-title column-body">
-      <h1 class="title">First Post</h1>
+      <h1 class="title">Estimating P* in R = P* - P</h1>
                   <div>
         <div class="description">
-          <p>Add your description here</p>
+          <p>We can use Bayes and the thermostatic model of public opinion to estimate latent policy preferences</p>
         </div>
       </div>
                           <div class="quarto-categories">
-                <div class="quarto-category">News</div>
+                <div class="quarto-category">Public Opinion</div>
+                <div class="quarto-category">Public Policy</div>
+                <div class="quarto-category">brms</div>
               </div>
                   </div>
   </div>
@@ -162,12 +200,89 @@ ul.task-list li input[type="checkbox"] {
 
 
 
-<p>This is the first post in a Quarto blog. Welcome!</p>
-<p>Since this post doesn’t specify an explicit <code>image</code>, the first image in the post will be used in the listing page of posts.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Load libraries</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(tidyverse)</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="fu">library</span>(brms)</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
+<p>In 1995, Chris Wlezien proposed <a href="https://www.jstor.org/stable/2111666">the thermostatic model of public opinion</a>. His insight was simple: two factors determine the public’s preference for more or less spending on a given policy, <span class="math inline">\(R\)</span>. The first is how much of the policy they want, <span class="math inline">\(P^{*}\)</span>. The second is how much of the policy they get, <span class="math inline">\(P\)</span>.</p>
+<p>When the public gets more spending than it wants (i.e.&nbsp;when <span class="math inline">\(P^{*} &lt; P\)</span>), it favours less spending. When the public wants more spending than it gets (i.e.&nbsp;when <span class="math inline">\(P^{*} &gt; P\)</span>), it favours more spending instead. Put it all together and we get the following model:</p>
+<p><span class="math display">\[
+\begin{align*}
+R &amp;= P^{*} - P
+\end{align*}
+\]</span></p>
+<p><span class="math inline">\(R\)</span> and <span class="math inline">\(P\)</span> are both easy to measure. We can use public opinion surveys to get a handle on the public’s relative policy preferences. And we can use government budgets to work out how much policy spending they get.</p>
+<p>Unfortunately, things aren’t so simple when it comes to measuring how much spending the public wants, <span class="math inline">\(P^{*}\)</span>. Of course, we could just ask them. But, even if we did, it’s doubtful that they could give us a figure in the same currency units that we use to measure <span class="math inline">\(P\)</span>.</p>
+<p>To get around this, most thermostatic models use other variables to stand in for <span class="math inline">\(P^{*}\)</span> instead. This is totally reasonable, but I still think we can do better. Everything that follows is speculative. But I want to share it in case it encourages others to think more deeply about how to solve this problem.</p>
+<section id="estimating-p-in-theory" class="level2">
+<h2 class="anchored" data-anchor-id="estimating-p-in-theory">Estimating <span class="math inline">\(P^{*}\)</span> in Theory</h2>
+<p>Let’s start by turning the simple model above into a generative one that we could use to model real-world data. We’ll assume that we’re working at the aggregate level, but much of what we work out will apply to the individual level too.</p>
+<p>Most of these analyses derive <span class="math inline">\(R\)</span> from survey questions that ask things like <em>“Are we spending too much, too little, or about the right amount on Welfare”</em>. More often than not, they measure <span class="math inline">\(R\)</span> as the percentage of respondents who want more of some policy minus those who want less.<a href="#fn1" class="footnote-ref" id="fnref1" role="doc-noteref"><sup>1</sup></a></p>
+<p>Technically, these “net differences” are bound by <span class="math inline">\(-100\%\)</span> and <span class="math inline">\(+100\%\)</span>. But as most of the action likely occurs in the middle of the scale, we’ll assume that they’re normally-distributed in this case. More formally, we’ll assume that:</p>
+<p><span class="math display">\[
+\begin{align*}
+R_{t} &amp;\sim \mathrm{Normal}(\mu, \sigma)
+\end{align*}
+\]</span></p>
+<p>Where <span class="math inline">\(\mu\)</span> is the variable’s mean and <span class="math inline">\(\sigma\)</span> its standard deviation. Note also that we’ve added the subscript <span class="math inline">\(t\)</span> to <span class="math inline">\(R\)</span> to show that it changes over time.</p>
+<p>We also know something else : that we want to model <span class="math inline">\(R_{t}\)</span> as some function of the difference between <span class="math inline">\(P^{*}_{t}\)</span> and <span class="math inline">\(P_{t}\)</span>. In principle, this function could take any character. But, for now, we’ll assume that <span class="math inline">\(R_{t}\)</span> is some linear function of <span class="math inline">\(P^{*}_{t} - P{t}\)</span>. We don’t need to include an intercept term here (the thresholds <span class="math inline">\(\tau\)</span> deal with that). But we do need to include a slope that, in effect, serves to convert the items on the right-hand side of the equation (that are measured in currency units) into the ordered units on the left-hand side of the equation. This gives:</p>
+<p><span class="math display">\[
+\begin{align*}
+R_{t} &amp;\sim \mathrm{Ordered}(\phi_{t}, \tau) \\
+\phi_{t} &amp;= \beta(P^{*}_{t} - P_{t})
+\end{align*}
+\]</span></p>
+<p>We could do all of this in a Frequentist framework. But it’s 2023 and no one really understand Frequentism anyway, so we’ll use a Bayesian framework instead. The nice thing about Bayes is that it makes no distinction between data and parameters. Data are just parameters that we observe. So while we might not <em>observe</em> <span class="math inline">\(P^{*}_{t}\)</span>, we can just treat it as an unobserved parameter and use our model and our data to measure it instead.</p>
+<p>As it’s measured in currency units, <span class="math inline">\(P^{*}_{t}\)</span> can only take values between <span class="math inline">\(0\)</span> and <span class="math inline">\(\infty\)</span>. One distribution that also has these properties is the log-normal distribution. But for practical reasons, this is difficult to implement in the way I’m going to below. So, for now, we’ll just model it as coming from a normal distribution:</p>
+<p><span class="math display">\[
+\begin{align*}
+R_{t} &amp;\sim \mathrm{Ordered}(\phi_{t}, \tau) \\
+\phi_{t} &amp;= \beta(P^{*}_{t} - P_{t}) \\
+P^{*}_{t} &amp;\sim \text{Normal}(\mu, \sigma)
+\end{align*}
+\]</span></p>
+<p>There are probably all sorts of ways that we could model <span class="math inline">\(P^{*}_{t}\)</span>. But they’re beyond the scope of this post. For now, let’s just remain agnostic and model it as a function of some constant, <span class="math inline">\(\alpha\)</span> and some non-linear function that changes over time, <span class="math inline">\(f(t)\)</span>. This gives:</p>
+<p><span class="math display">\[
+\begin{align*}
+R_{t} &amp;\sim \mathrm{Ordered}(\phi_{t}, \tau) \\
+\phi_{t} &amp;= \beta(P^{*}_{t} - P_{t}) \\
+P^{*}_{t} &amp;\sim \text{Normal}(\mu, \sigma) \\
+\mu_{t} &amp;= \alpha + f(t)
+\end{align*}
+\]</span></p>
+</section>
+<section id="estimating-p-in-practice" class="level2">
+<h2 class="anchored" data-anchor-id="estimating-p-in-practice">Estimating <span class="math inline">\(P^{*}\)</span> in Practice</h2>
+<p>Now we have a model, we can fit it to some data. I’m going to use two sources. To measure relative policy preference, <span class="math inline">\(R_{t}\)</span>, I’ll use data from the US <a href="https://gss.norc.org">General Social Survey</a>. And to measure how much policy the public is getting, <span class="math inline">\(P_{t}\)</span>, I’ll use <a href="https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IKPZPU">the replication data</a> from Chris’ book with Stuart Soroka, <em>Degrees of Democracy</em>.</p>
+<p>In terms of doing the actual modelling, we’ll use <a href="http://github.com/paul-buerkner/brms"><code>brms</code></a>, which has a great non-linear syntax that we can use to specify our model.</p>
+<div class="cell">
+<details>
+<summary>Code</summary>
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># model_formula &lt;- </span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">#   bf(</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">#     r ~ b * (pstar - p),</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">#     pstar ~ 1 + s(t),</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="co">#     b ~ 1,</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="co">#     nl = TRUE</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a><span class="co">#   )</span></span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</details>
+</div>
 
 
+</section>
 
-</main> <!-- /main -->
+
+<div id="quarto-appendix" class="default"><section id="footnotes" class="footnotes footnotes-end-of-document" role="doc-endnotes"><h2 class="anchored quarto-appendix-heading">Footnotes</h2>
+
+<ol>
+<li id="fn1"><p>That the middle category is ignored in this case is a problem. For example, such a measure would give a score of <span class="math inline">\(0\)</span> where the public is evenly split between wanting more or less spending <em>and</em> where everyone thinks things are fine as they are. This seems less than ideal and scholars of this literature would probably be better off modelling the data as ordinal. But, either way, I’ll stick to the convention to make my broader point.<a href="#fnref1" class="footnote-back" role="doc-backlink">↩︎</a></p></li>
+</ol>
+</section></div></main> <!-- /main -->
 <script id="quarto-html-after-body" type="application/javascript">
 window.document.addEventListener("DOMContentLoaded", function (event) {
   const toggleBodyColorMode = (bsSheetEl) => {

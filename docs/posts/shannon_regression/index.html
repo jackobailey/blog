@@ -1,0 +1,601 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.3.353">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Jack Bailey">
+<meta name="dcterms.date" content="2023-08-04">
+<meta name="description" content="An Information Theoretic Alternative to Logistic and Probit Regression for Binary Outcomes">
+
+<title>Jack Bailey - Introducing Shannon Regression</title>
+<style>
+code{white-space: pre-wrap;}
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: min(4vw, 1.5em);}
+div.column{flex: auto; overflow-x: auto;}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="../../site_libs/quarto-nav/quarto-nav.js"></script>
+<script src="../../site_libs/quarto-nav/headroom.min.js"></script>
+<script src="../../site_libs/clipboard/clipboard.min.js"></script>
+<script src="../../site_libs/quarto-search/autocomplete.umd.js"></script>
+<script src="../../site_libs/quarto-search/fuse.min.js"></script>
+<script src="../../site_libs/quarto-search/quarto-search.js"></script>
+<meta name="quarto:offset" content="../../">
+<script src="../../site_libs/quarto-html/quarto.js"></script>
+<script src="../../site_libs/quarto-html/popper.min.js"></script>
+<script src="../../site_libs/quarto-html/tippy.umd.min.js"></script>
+<script src="../../site_libs/quarto-html/anchor.min.js"></script>
+<link href="../../site_libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="../../site_libs/quarto-html/quarto-syntax-highlighting.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="../../site_libs/bootstrap/bootstrap.min.js"></script>
+<link href="../../site_libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="../../site_libs/bootstrap/bootstrap.min.css" rel="stylesheet" id="quarto-bootstrap" data-mode="light">
+<script id="quarto-search-options" type="application/json">{
+  "location": "navbar",
+  "copy-button": false,
+  "collapse-after": 3,
+  "panel-placement": "end",
+  "type": "overlay",
+  "limit": 20,
+  "language": {
+    "search-no-results-text": "No results",
+    "search-matching-documents-text": "matching documents",
+    "search-copy-link-title": "Copy link to search",
+    "search-hide-matches-text": "Hide additional matches",
+    "search-more-match-text": "more match in this document",
+    "search-more-matches-text": "more matches in this document",
+    "search-clear-button-title": "Clear",
+    "search-detached-cancel-button-title": "Cancel",
+    "search-submit-button-title": "Submit"
+  }
+}</script>
+
+<script src="../../site_libs/kePrint-0.0.1/kePrint.js"></script>
+<link href="../../site_libs/lightable-0.0.1/lightable.css" rel="stylesheet">
+<link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/cabin" type="text/css">
+
+  <script src="https://polyfill.io/v3/polyfill.min.js?features=es6"></script>
+  <script src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-chtml-full.js" type="text/javascript"></script>
+
+<link rel="stylesheet" href="../../styles.css">
+</head>
+
+<body class="nav-fixed fullcontent">
+
+<div id="quarto-search-results"></div>
+  <header id="quarto-header" class="headroom fixed-top">
+    <nav class="navbar navbar-expand-lg navbar-dark ">
+      <div class="navbar-container container-fluid">
+      <div class="navbar-brand-container">
+    <a class="navbar-brand" href="../../index.html">
+    <span class="navbar-title">Jack Bailey</span>
+    </a>
+  </div>
+            <div id="quarto-search" class="" title="Search"></div>
+          <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarCollapse" aria-controls="navbarCollapse" aria-expanded="false" aria-label="Toggle navigation" onclick="if (window.quartoToggleHeadroom) { window.quartoToggleHeadroom(); }">
+  <span class="navbar-toggler-icon"></span>
+</button>
+          <div class="collapse navbar-collapse" id="navbarCollapse">
+            <ul class="navbar-nav navbar-nav-scroll ms-auto">
+  <li class="nav-item">
+    <a class="nav-link" href="../../about.html" rel="" target="">
+ <span class="menu-text">About</span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="http://github.com/jackobailey" rel="" target=""><i class="bi bi-github" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://twitter.com/PoliSciJack" rel="" target=""><i class="bi bi-twitter" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="https://www.linkedin.com/in/jack-bailey-776221227/" rel="" target=""><i class="bi bi-linkedin" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+  <li class="nav-item compact">
+    <a class="nav-link" href="../../index.xml" rel="" target=""><i class="bi bi-rss" role="img">
+</i> 
+ <span class="menu-text"></span></a>
+  </li>  
+</ul>
+            <div class="quarto-navbar-tools">
+</div>
+          </div> <!-- /navcollapse -->
+      </div> <!-- /container-fluid -->
+    </nav>
+</header>
+<!-- content -->
+<header id="title-block-header" class="quarto-title-block default page-columns page-full">
+  <div class="quarto-title-banner page-columns page-full">
+    <div class="quarto-title column-body">
+      <h1 class="title">Introducing Shannon Regression</h1>
+                  <div>
+        <div class="description">
+          <p>An Information Theoretic Alternative to Logistic and Probit Regression for Binary Outcomes</p>
+        </div>
+      </div>
+                          <div class="quarto-categories">
+                <div class="quarto-category">Statistics</div>
+                <div class="quarto-category">Information Theory</div>
+              </div>
+                  </div>
+  </div>
+    
+  
+  <div class="quarto-title-meta">
+
+      <div>
+      <div class="quarto-title-meta-heading">Author</div>
+      <div class="quarto-title-meta-contents">
+               <p>Jack Bailey </p>
+            </div>
+    </div>
+      
+      <div>
+      <div class="quarto-title-meta-heading">Published</div>
+      <div class="quarto-title-meta-contents">
+        <p class="date">August 4, 2023</p>
+      </div>
+    </div>
+    
+      
+    </div>
+    
+  
+  </header><div id="quarto-content" class="quarto-container page-columns page-rows-contents page-layout-article page-navbar">
+<!-- sidebar -->
+<!-- margin-sidebar -->
+    
+<!-- main -->
+<main class="content quarto-banner-title-block" id="quarto-document-content">
+
+
+
+
+<p>I suspect few political scientists spend time dwelling on information theory. But, over the past year, I’ve spent a lot of time reading and thinking about it. And I am beginning to believe that it has a lot to offer the study of social and political systems.</p>
+<p>I’ve found two books on the subject most enlightening. The first is <a href="https://jamesstone.sites.sheffield.ac.uk/books/information-theory">James V. Stone’s “Information Theory: A Tutorial Introduction”</a>. The second is <a href="https://www.simonandschuster.com/books/A-Mind-at-Play/Jimmy-Soni/9781476766690">Jimmy Soni and Rob Goodman’s “A Mind at Play: How Claude Shannon Invented the Information Age”</a>. Together they provide a guide to the basics of information theory and its development as a field.</p>
+<p>Information theory owes its existence to one man: Claude Shannon. Shannon more or less invented the field, then solved its most pressing problems, in his landmark paper <a href="https://ieeexplore.ieee.org/document/6773024">“A Mathematical Theory of Communication”</a>. Information theory concerns communications first and foremost. But, really, it’s all about probability. As such, we can apply its insight to any other system that also involves probabilistic outcomes.</p>
+<p>In this vain, this blog describes a new type of regression model that I’ve developed. Like logistic or probit regression, it serves to model binary outcomes. But, unlike logistic or probit regression, it uses Shannon’s information content as its link function. This the model – which I call “Shannon regression” – some useful properties. In particular, that it measures coefficients in bits.</p>
+<p>I’ll probably write a paper on the method once I understand it better. But I am keen to get it out there so that others can use it and so that I can get some feedback. So, for now, this blog will serve as a kind of way marker. Both for myself, so that I can develop a better understanding of the model, and for others, who might find the project interesting and useful.</p>
+<section id="understanding-information-content" class="level2">
+<h2 class="anchored" data-anchor-id="understanding-information-content">Understanding Information Content</h2>
+<p>To understand Shannon regression, you need to know what information is and how we measure it. If that’s something you know, feel free to skip to the next section. If not, let’s take a moment to spell it all out.</p>
+<p>We measure information in “bits”. By definition, 1 bit of information is enough to reduce uncertainty by half. For example, imagine that I toss a fair coin in the air, then prevent you from seeing how it lands. Before you see the coin, you have a 50/50 chance of guessing how it landed. I then reveal that the result is a head. As such, the probabilities change. Because you know how the coin landed, you are certain to guess correctly. You went from choosing between two possible outcomes to one. In other words, your uncertainty halved. Such is the power of 1 bit of information.</p>
+<p>To compute the information of some event is straightforward. And this is true no matter whether we’re talking about a coin toss or any other probabilistic event. All we need to do is to use the equation for Shannon’s information content:</p>
+<p><span class="math display">\[
+I(p) = -\mathrm{log}_{2}p
+\]</span></p>
+<p>Likewise, we can convert bits of information back into probabilities using the following exponentiation:</p>
+<p><span class="math display">\[
+p = 2^{-I}
+\]</span></p>
+<p>You might ask “why bother?”. Basically every single advancement in the information age is one reason. Another is that doing yields nice properties that can be useful in certain contexts. Chief among them is that when probabilities are multiplicative, information is additive. For instance, the chance of guessing 1 head is <span class="math inline">\(\frac{1}{2}\)</span>, 2 heads is <span class="math inline">\(\frac{1}{2} \times \frac{1}{2} = \frac{1}{4}\)</span>, and 3 heads is <span class="math inline">\(\frac{1}{2} \times \frac{1}{2} \times \frac{1}{2} = \frac{1}{8}\)</span>. The amount of information you’d need, on the other hand, is just 1 bit, 2 bits, and 3 bits.</p>
+<p>This point is worth stressing: 1 bit of information if how much you’d need to guess a fair coin flip. And since information is additive, it follows that we can interpret it in terms of coin flips too.</p>
+<p>I expect most of the people reading this will be political scientists, so let’s use a political example. At the 2019 UK general election, the Labour Party got 32.1% of the vote. So how much information would we need to guess that someone was a Labour voter assuming we knew nothing about them? Well <span class="math inline">\(I(0.321) \approx 1.64\)</span>, so not much at all. It would take more information than we’d need to guess 1 coin flip, but less than to guess 2 in a row. What about one of the smaller parties? In 2019, UKIP got only 0.07% of the vote (yes, really). That gives <span class="math inline">\(I(0.0007) \approx 10.48\)</span> bits of information. That’s a lot of information. You’re more or less just as likely to guess that someone you know nothing about voted UKIP as you are to guess 10 coin flips in a row.</p>
+</section>
+<section id="building-the-model" class="level2">
+<h2 class="anchored" data-anchor-id="building-the-model">Building the Model</h2>
+<p>Now that you know a little information theory, we can move onto the modelling. All generalised linear models use something called a “link function”. As the name suggests, it is a function that links the outcome scale to some other scale. We do this because it’s often hard to fit a line to the original scale, so we do it on another and transform the result between the two.</p>
+<p>Logistic regression, for instance, uses <a href="https://en.wikipedia.org/wiki/Logit">the logit link function</a>. The word “logit” might sound complicated, but it’s really just a fancy way of saying the logarithm of the odds of some probability. Let’s use a fair coin toss again as an example. Since the coin’s fair, you know that the probability, <span class="math inline">\(p\)</span>, that it lands heads up is 0.5. To convert this probability into logits, we just stick it into the following equation:</p>
+<p><span class="math display">\[
+\mathrm{logit}(p) = \mathrm{ln} \Bigl( \frac{p}{1 - p} \Bigr)
+\]</span></p>
+<p>Here, we first compute the odds of getting a heads, <span class="math inline">\(\frac{p}{1-p} = \frac{0.5}{1 - 0.5} = 1\)</span>. Then, we run the resulting odds through the natural logarithm function, <span class="math inline">\(\mathrm{ln}\)</span>, to convert it to log-odds or logits, <span class="math inline">\(\mathrm{ln}(1) = 0\)</span>. These models also make use of “inverse link functions” that perform the opposite operation. For example, the inverse logit function converts logits back into probabilities. If we have some outcome that we have measured in logits, <span class="math inline">\(x\)</span>, we can convert it back into probabilities as follows:</p>
+<p><span class="math display">\[
+\sigma(x) = \frac{1}{1 + e^{-x}}
+\]</span></p>
+<p>So if we sub in the answer from before we get <span class="math inline">\(\sigma(x) = \frac{1}{1 + e^{-0}} = \frac{1}{1 + 1} = \frac{1}{2} = 0.5\)</span>, the probability of getting a heads on a fair coin.</p>
+<p>Other models of binary data use other link functions. The probit model uses the cumulative density function of the normal distribution. Likewise, the cauchit model uses the inverse Cauchy distribution. There is no right or wrong answer here. Different models have different properties that make them more or less useful in certain situations. But most of the time the choice comes down to habit. Economists tend to use probit because they always have done. Other social scientists tend to use logistic regression for the same reason.</p>
+<p>In practice, we can use whatever link function we want. As the name suggests, Shannon regression uses the equation for Shannon’s information content as its link function:</p>
+<p><span class="math display">\[
+I(p) = -\mathrm{log}_{2}p
+\]</span></p>
+<p>And, as its inverse link, it uses the exponentiation from above that turns bits of information back into probabilities:</p>
+<p><span class="math display">\[
+p = 2^{-I}
+\]</span></p>
+<p>I thought that implementing this model was going to be really hard. But it turns out that programming custom families in <code>R</code> is really easy. All you have to do is create a function that lays it all out. I’ve called mine “bits” to reflect the unit of measurement:</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb1"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Define "bit" link function</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>bit <span class="ot">&lt;-</span> </span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>  <span class="cf">function</span>(){</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    linkfun <span class="ot">&lt;-</span> <span class="cf">function</span>(mu) <span class="sc">-</span><span class="fu">log</span>(mu, <span class="dv">2</span>)</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>    linkinv <span class="ot">&lt;-</span> <span class="cf">function</span>(eta) <span class="dv">2</span><span class="sc">^-</span>eta</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a>    mu.eta <span class="ot">&lt;-</span> <span class="cf">function</span>(eta) <span class="sc">-</span><span class="fu">log</span>(<span class="dv">2</span>)<span class="sc">/</span>(<span class="dv">2</span><span class="sc">^</span>eta)</span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    valideta <span class="ot">&lt;-</span> <span class="cf">function</span>(eta) <span class="fu">all</span>(<span class="fu">is.finite</span>(eta) <span class="sc">&amp;</span> eta <span class="sc">&gt;</span> <span class="dv">0</span>) </span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    link <span class="ot">&lt;-</span> <span class="st">"bit"</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="fu">structure</span>(</span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>      <span class="fu">list</span>(</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        <span class="at">linkfun =</span> linkfun,</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>        <span class="at">linkinv =</span> linkinv, </span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>        <span class="at">mu.eta =</span> mu.eta,</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>        <span class="at">valideta =</span> valideta,</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        <span class="at">name =</span> link</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>      ),</span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>      <span class="at">class =</span> <span class="st">"link-glm"</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>  }</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Most of this should be pretty self explanatory:</p>
+<ul>
+<li><p><code>linkfun</code>: Specifies the link function</p></li>
+<li><p><code>linkinv</code>: Specifies the inverse link function</p></li>
+<li><p><code>mu.eta</code>: Specifies the derivative of the inverse link with respect to eta</p></li>
+<li><p><code>valideta</code>: Specifies valid values that eta can take</p></li>
+<li><p><code>link</code>: Specifies the name of the custom family</p></li>
+<li><p><code>structure</code>: Tells the <code>glm</code> function what everything does</p></li>
+</ul>
+<p>Let’s simulate some data and run the model. Given the theme of this blog post, we’ll imagine that we’re running an experiment involving coin flips. We recruit <span class="math inline">\(n\)</span> participants, then assign them either a 0 or a 1 at random. Those in the control group, where <span class="math inline">\(t = 0\)</span>, get a fair coin where the probability of getting heads is 0.5. Those in the treatment group, where <span class="math inline">\(t = 1\)</span>, get an unfair coin where the probability of getting heads is only 0.25 instead After giving our respondents their coin, we ask them to toss it, then record if they got a heads (1) or a tails (0).</p>
+<div class="cell">
+<div class="sourceCode cell-code" id="cb2"><pre class="sourceCode r code-with-copy"><code class="sourceCode r"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co"># Specify simulation parameters</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>n <span class="ot">&lt;-</span> <span class="dv">10000</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>fair_heads <span class="ot">&lt;-</span> <span class="fl">0.5</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>unfair_heads <span class="ot">&lt;-</span> <span class="fl">0.25</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="co"># Assign respondents to a treatment status</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>treated <span class="ot">&lt;-</span> </span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>  <span class="fu">sample</span>(</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="at">x =</span> <span class="dv">0</span><span class="sc">:</span><span class="dv">1</span>,</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> n,</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="at">replace =</span> T</span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    )</span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co"># Get coin toss outcomes</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>outcome <span class="ot">&lt;-</span> </span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>  <span class="fu">rbinom</span>(</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>    <span class="at">n =</span> n,</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="at">size =</span> <span class="dv">1</span>,</span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>    <span class="at">prob =</span> <span class="fu">ifelse</span>(treated <span class="sc">==</span> <span class="dv">1</span>, unfair_heads, fair_heads)</span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>  )</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a><span class="co"># Fit the model</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a>coin_model <span class="ot">&lt;-</span> </span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>  <span class="fu">glm</span>(</span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    <span class="at">formula =</span> outcome <span class="sc">~</span> <span class="dv">1</span> <span class="sc">+</span> treated,</span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a>    <span class="at">family =</span> <span class="fu">binomial</span>(<span class="at">link =</span> <span class="fu">bit</span>())</span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a>  )</span></code><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></pre></div>
+</div>
+<p>Now that we’ve fit the model, let’s check its output:</p>
+<div class="cell">
+<div class="cell-output-display">
+<table class="table table-sm table-striped small" data-quarto-postprocess="true">
+<thead>
+<tr class="header">
+<th style="text-align: left;" data-quarto-table-cell-role="th"></th>
+<th style="text-align: center;" data-quarto-table-cell-role="th">&nbsp;(1)</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td style="text-align: left;">(Intercept)</td>
+<td style="text-align: center;">0.971</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: center;">(0.020)</td>
+</tr>
+<tr class="odd">
+<td style="text-align: left;">treated</td>
+<td style="text-align: center;">0.992</td>
+</tr>
+<tr class="even">
+<td style="text-align: left;"></td>
+<td style="text-align: center;">(0.040)</td>
+</tr>
+</tbody>
+</table>
+
+
+</div>
+</div>
+<p>Because we used the equation for Shannon’s information content as our link function, the coefficients are measured in bits of information. Like almost any model of a simple experiment, ours has an intercept and a treatment effect. Let’s work out how to interpret them step by step.</p>
+<p>The intercept tells us how many bits of information we would need to guess the outcome for someone in the control group. The coefficient itself is 0.97, or about 1 bit of information. This makes sense. Recall that we gave those in the treatment group a fair coin and that we need 1 bit of information to guess the outcome of a fair coin toss.</p>
+<p>The treatment effect tells us how many additional bits of information we would need to guess the outcome for someone in the treatment group. The coefficient is 0.99, again about 1 bit of information. When added to the intercept, this gives 1.96, or about 2 bits of information. Again, this makes sense. We gave those in the treatment group an unfair coin that landed heads side up with probability 0.25. So to guess it right, we’d need 2 bits of information, which is how much information it takes to guess the outcome of 2 fair coin flips since <span class="math inline">\(\frac{1}{2} \times \frac{1}{2} = \frac{1}{4}\)</span>.</p>
+<p>At first, it might seem unusual that the treatment caused a <em>negative</em> change in the probability of getting a head but yielded a <em>positive</em> coefficient. But it’s actually quite intuitive when you think about it in information theoretic terms: all we’re doing is counting up coins. And since rarer events are akin to guessing more coin flips correctly, it’s takes <em>more</em> bits of information to guess <em>less</em> frequent events.</p>
+</section>
+<section id="conclusion" class="level2">
+<h2 class="anchored" data-anchor-id="conclusion">Conclusion</h2>
+<p>One response to all of this might be: so what? That’s fair enough. I certainly don’t expect people to read this post then switch to using Shannon regression <em>en masse</em>. That said, I do think that there are certain use cases where using Shannon regression might make sense.</p>
+<p>To me, the most obvious use case is scenarios which already involve information theoretic quantities. Here, computing effect sizes in bits might prove useful as it would mean that parameter estimates and quantities of interest share a common scale. Likewise, it might be possible to use Shannon regression to decompose sets of outcomes and predictors into known information theoretic quantities.</p>
+<p>But, ultimately, I don’t care what the use case is. And I’m sure I have missed some that are blindingly obvious. Shannon regression is neat whatever the case and by putting it out into the world it’ll hopefully find a use in its own time.</p>
+
+
+</section>
+
+</main> <!-- /main -->
+<script id="quarto-html-after-body" type="application/javascript">
+window.document.addEventListener("DOMContentLoaded", function (event) {
+  const toggleBodyColorMode = (bsSheetEl) => {
+    const mode = bsSheetEl.getAttribute("data-mode");
+    const bodyEl = window.document.querySelector("body");
+    if (mode === "dark") {
+      bodyEl.classList.add("quarto-dark");
+      bodyEl.classList.remove("quarto-light");
+    } else {
+      bodyEl.classList.add("quarto-light");
+      bodyEl.classList.remove("quarto-dark");
+    }
+  }
+  const toggleBodyColorPrimary = () => {
+    const bsSheetEl = window.document.querySelector("link#quarto-bootstrap");
+    if (bsSheetEl) {
+      toggleBodyColorMode(bsSheetEl);
+    }
+  }
+  toggleBodyColorPrimary();  
+  const icon = "";
+  const anchorJS = new window.AnchorJS();
+  anchorJS.options = {
+    placement: 'right',
+    icon: icon
+  };
+  anchorJS.add('.anchored');
+  const isCodeAnnotation = (el) => {
+    for (const clz of el.classList) {
+      if (clz.startsWith('code-annotation-')) {                     
+        return true;
+      }
+    }
+    return false;
+  }
+  const clipboard = new window.ClipboardJS('.code-copy-button', {
+    text: function(trigger) {
+      const codeEl = trigger.previousElementSibling.cloneNode(true);
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+  });
+  clipboard.on('success', function(e) {
+    // button target
+    const button = e.trigger;
+    // don't keep focus
+    button.blur();
+    // flash "checked"
+    button.classList.add('code-copy-button-checked');
+    var currentTitle = button.getAttribute("title");
+    button.setAttribute("title", "Copied!");
+    let tooltip;
+    if (window.bootstrap) {
+      button.setAttribute("data-bs-toggle", "tooltip");
+      button.setAttribute("data-bs-placement", "left");
+      button.setAttribute("data-bs-title", "Copied!");
+      tooltip = new bootstrap.Tooltip(button, 
+        { trigger: "manual", 
+          customClass: "code-copy-button-tooltip",
+          offset: [0, -8]});
+      tooltip.show();    
+    }
+    setTimeout(function() {
+      if (tooltip) {
+        tooltip.hide();
+        button.removeAttribute("data-bs-title");
+        button.removeAttribute("data-bs-toggle");
+        button.removeAttribute("data-bs-placement");
+      }
+      button.setAttribute("title", currentTitle);
+      button.classList.remove('code-copy-button-checked');
+    }, 1000);
+    // clear code selection
+    e.clearSelection();
+  });
+  function tippyHover(el, contentFn) {
+    const config = {
+      allowHTML: true,
+      content: contentFn,
+      maxWidth: 500,
+      delay: 100,
+      arrow: false,
+      appendTo: function(el) {
+          return el.parentElement;
+      },
+      interactive: true,
+      interactiveBorder: 10,
+      theme: 'quarto',
+      placement: 'bottom-start'
+    };
+    window.tippy(el, config); 
+  }
+  const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+  for (var i=0; i<noterefs.length; i++) {
+    const ref = noterefs[i];
+    tippyHover(ref, function() {
+      // use id or data attribute instead here
+      let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+      try { href = new URL(href).hash; } catch {}
+      const id = href.replace(/^#\/?/, "");
+      const note = window.document.getElementById(id);
+      return note.innerHTML;
+    });
+  }
+      let selectedAnnoteEl;
+      const selectorForAnnotation = ( cell, annotation) => {
+        let cellAttr = 'data-code-cell="' + cell + '"';
+        let lineAttr = 'data-code-annotation="' +  annotation + '"';
+        const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+        return selector;
+      }
+      const selectCodeLines = (annoteEl) => {
+        const doc = window.document;
+        const targetCell = annoteEl.getAttribute("data-target-cell");
+        const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+        const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+        const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+        const lineIds = lines.map((line) => {
+          return targetCell + "-" + line;
+        })
+        let top = null;
+        let height = null;
+        let parent = null;
+        if (lineIds.length > 0) {
+            //compute the position of the single el (top and bottom and make a div)
+            const el = window.document.getElementById(lineIds[0]);
+            top = el.offsetTop;
+            height = el.offsetHeight;
+            parent = el.parentElement.parentElement;
+          if (lineIds.length > 1) {
+            const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+            const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+            height = bottom - top;
+          }
+          if (top !== null && height !== null && parent !== null) {
+            // cook up a div (if necessary) and position it 
+            let div = window.document.getElementById("code-annotation-line-highlight");
+            if (div === null) {
+              div = window.document.createElement("div");
+              div.setAttribute("id", "code-annotation-line-highlight");
+              div.style.position = 'absolute';
+              parent.appendChild(div);
+            }
+            div.style.top = top - 2 + "px";
+            div.style.height = height + 4 + "px";
+            let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+            if (gutterDiv === null) {
+              gutterDiv = window.document.createElement("div");
+              gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+              gutterDiv.style.position = 'absolute';
+              const codeCell = window.document.getElementById(targetCell);
+              const gutter = codeCell.querySelector('.code-annotation-gutter');
+              gutter.appendChild(gutterDiv);
+            }
+            gutterDiv.style.top = top - 2 + "px";
+            gutterDiv.style.height = height + 4 + "px";
+          }
+          selectedAnnoteEl = annoteEl;
+        }
+      };
+      const unselectCodeLines = () => {
+        const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+        elementsIds.forEach((elId) => {
+          const div = window.document.getElementById(elId);
+          if (div) {
+            div.remove();
+          }
+        });
+        selectedAnnoteEl = undefined;
+      };
+      // Attach click handler to the DT
+      const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+      for (const annoteDlNode of annoteDls) {
+        annoteDlNode.addEventListener('click', (event) => {
+          const clickedEl = event.target;
+          if (clickedEl !== selectedAnnoteEl) {
+            unselectCodeLines();
+            const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+            if (activeEl) {
+              activeEl.classList.remove('code-annotation-active');
+            }
+            selectCodeLines(clickedEl);
+            clickedEl.classList.add('code-annotation-active');
+          } else {
+            // Unselect the line
+            unselectCodeLines();
+            clickedEl.classList.remove('code-annotation-active');
+          }
+        });
+      }
+  const findCites = (el) => {
+    const parentEl = el.parentElement;
+    if (parentEl) {
+      const cites = parentEl.dataset.cites;
+      if (cites) {
+        return {
+          el,
+          cites: cites.split(' ')
+        };
+      } else {
+        return findCites(el.parentElement)
+      }
+    } else {
+      return undefined;
+    }
+  };
+  var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+  for (var i=0; i<bibliorefs.length; i++) {
+    const ref = bibliorefs[i];
+    const citeInfo = findCites(ref);
+    if (citeInfo) {
+      tippyHover(citeInfo.el, function() {
+        var popup = window.document.createElement('div');
+        citeInfo.cites.forEach(function(cite) {
+          var citeDiv = window.document.createElement('div');
+          citeDiv.classList.add('hanging-indent');
+          citeDiv.classList.add('csl-entry');
+          var biblioDiv = window.document.getElementById('ref-' + cite);
+          if (biblioDiv) {
+            citeDiv.innerHTML = biblioDiv.innerHTML;
+          }
+          popup.appendChild(citeDiv);
+        });
+        return popup.innerHTML;
+      });
+    }
+  }
+});
+</script>
+</div> <!-- /content -->
+
+
+
+</body></html>

@@ -1,0 +1,119 @@
+---
+title: "Estimating P* in R = P* - P"
+code-fold: true
+author:
+  - name: Jack Bailey
+    # url: https://example.com/norajones
+    # affiliation: Spacely Sprockets
+    # affiliation-url: https://example.com/spacelysprokets
+date: "2023-07-30"
+# date-modified: "5/23/2021"
+description: |
+  We can use Bayes and the thermostatic model of public opinion to estimate latent policy preferences
+freeze: true
+execute: 
+  echo: false
+categories: [Public Opinion, Public Policy, brms]
+draft: true
+---
+
+```{r}
+#| label: Setup
+#| echo: true
+#| message: false
+
+# Load libraries
+
+library(tidyverse)
+library(brms)
+
+```
+
+In 1995, Chris Wlezien proposed [the thermostatic model of public opinion](https://www.jstor.org/stable/2111666). His insight was simple: two factors determine the public's preference for more or less spending on a given policy, $R$. The first is how much of the policy they want, $P^{*}$. The second is how much of the policy they get, $P$.
+
+When the public gets more spending than it wants (i.e. when $P^{*} < P$), it favours less spending. When the public wants more spending than it gets (i.e. when $P^{*} > P$), it favours more spending instead. Put it all together and we get the following model:
+
+$$
+\begin{align*}
+R &= P^{*} - P
+\end{align*}
+$$
+
+$R$ and $P$ are both easy to measure. We can use public opinion surveys to get a handle on the public's relative policy preferences. And we can use government budgets to work out how much policy spending they get.
+
+Unfortunately, things aren't so simple when it comes to measuring how much spending the public wants, $P^{*}$. Of course, we could just ask them. But, even if we did, it's doubtful that they could give us a figure in the same currency units that we use to measure $P$.
+
+To get around this, most thermostatic models use other variables to stand in for $P^{*}$ instead. This is totally reasonable, but I still think we can do better. Everything that follows is speculative. But I want to share it in case it encourages others to think more deeply about how to solve this problem.
+
+## Estimating $P^{*}$ in Theory
+
+Let's start by turning the simple model above into a generative one that we could use to model real-world data. We'll assume that we're working at the aggregate level, but much of what we work out will apply to the individual level too.
+
+Most of these analyses derive $R$ from survey questions that ask things like *"Are we spending too much, too little, or about the right amount on Welfare"*. More often than not, they measure $R$ as the percentage of respondents who want more of some policy minus those who want less.[^1]
+
+[^1]: That the middle category is ignored in this case is a problem. For example, such a measure would give a score of $0$ where the public is evenly split between wanting more or less spending *and* where everyone thinks things are fine as they are. This seems less than ideal and scholars of this literature would probably be better off modelling the data as ordinal. But, either way, I'll stick to the convention to make my broader point.
+
+Technically, these "net differences" are bound by $-100\%$ and $+100\%$. But as most of the action likely occurs in the middle of the scale, we'll assume that they're normally-distributed in this case. More formally, we'll assume that:
+
+$$
+\begin{align*}
+R_{t} &\sim \mathrm{Normal}(\mu, \sigma)
+\end{align*}
+$$
+
+Where $\mu$ is the variable's mean and $\sigma$ its standard deviation. Note also that we've added the subscript $t$ to $R$ to show that it changes over time.
+
+
+
+
+
+We also know something else : that we want to model $R_{t}$ as some function of the difference between $P^{*}_{t}$ and $P_{t}$. In principle, this function could take any character. But, for now, we'll assume that $R_{t}$ is some linear function of $P^{*}_{t} - P{t}$. We don't need to include an intercept term here (the thresholds $\tau$ deal with that). But we do need to include a slope that, in effect, serves to convert the items on the right-hand side of the equation (that are measured in currency units) into the ordered units on the left-hand side of the equation. This gives:
+
+$$
+\begin{align*}
+R_{t} &\sim \mathrm{Ordered}(\phi_{t}, \tau) \\
+\phi_{t} &= \beta(P^{*}_{t} - P_{t})
+\end{align*}
+$$
+
+We could do all of this in a Frequentist framework. But it's 2023 and no one really understand Frequentism anyway, so we'll use a Bayesian framework instead. The nice thing about Bayes is that it makes no distinction between data and parameters. Data are just parameters that we observe. So while we might not *observe* $P^{*}_{t}$, we can just treat it as an unobserved parameter and use our model and our data to measure it instead.
+
+As it's measured in currency units, $P^{*}_{t}$ can only take values between $0$ and $\infty$. One distribution that also has these properties is the log-normal distribution. But for practical reasons, this is difficult to implement in the way I'm going to below. So, for now, we'll just model it as coming from a normal distribution:
+
+$$
+\begin{align*}
+R_{t} &\sim \mathrm{Ordered}(\phi_{t}, \tau) \\
+\phi_{t} &= \beta(P^{*}_{t} - P_{t}) \\
+P^{*}_{t} &\sim \text{Normal}(\mu, \sigma)
+\end{align*}
+$$
+
+There are probably all sorts of ways that we could model $P^{*}_{t}$. But they're beyond the scope of this post. For now, let's just remain agnostic and model it as a function of some constant, $\alpha$ and some non-linear function that changes over time, $f(t)$. This gives:
+
+$$
+\begin{align*}
+R_{t} &\sim \mathrm{Ordered}(\phi_{t}, \tau) \\
+\phi_{t} &= \beta(P^{*}_{t} - P_{t}) \\
+P^{*}_{t} &\sim \text{Normal}(\mu, \sigma) \\
+\mu_{t} &= \alpha + f(t)
+\end{align*}
+$$
+
+## Estimating $P^{*}$ in Practice
+
+Now we have a model, we can fit it to some data. I'm going to use two sources. To measure relative policy preference, $R_{t}$, I'll use data from the US [General Social Survey](https://gss.norc.org). And to measure how much policy the public is getting, $P_{t}$, I'll use [the replication data](https://dataverse.harvard.edu/dataset.xhtml?persistentId=doi:10.7910/DVN/IKPZPU) from Chris' book with Stuart Soroka, *Degrees of Democracy*.
+
+In terms of doing the actual modelling, we'll use [`brms`](http://github.com/paul-buerkner/brms), which has a great non-linear syntax that we can use to specify our model.
+
+```{r}
+#| label: model
+#| echo: true
+
+# model_formula <- 
+#   bf(
+#     r ~ b * (pstar - p),
+#     pstar ~ 1 + s(t),
+#     b ~ 1,
+#     nl = TRUE
+#   )
+```
