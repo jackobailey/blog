@@ -6,15 +6,15 @@
       version="2.0">
 <channel>
 <title>Jack Bailey</title>
-<link>https://www.jack-bailey.co.uk/index.html</link>
-<atom:link href="https://www.jack-bailey.co.uk/index.xml" rel="self" type="application/rss+xml"/>
+<link>https://jack-bailey.co.uk/index.html</link>
+<atom:link href="https://jack-bailey.co.uk/index.xml" rel="self" type="application/rss+xml"/>
 <description>Dr Jack Bailey, Political Scientist</description>
 <generator>quarto-1.3.353</generator>
 <lastBuildDate>Thu, 03 Aug 2023 23:00:00 GMT</lastBuildDate>
 <item>
   <title>Introducing Shannon Regression</title>
   <dc:creator>Jack Bailey</dc:creator>
-  <link>https://www.jack-bailey.co.uk/posts/shannon_regression/index.html</link>
+  <link>https://jack-bailey.co.uk/posts/shannon_regression/index.html</link>
   <description><![CDATA[ 
 
 
@@ -319,7 +319,7 @@ font-style: inherit;">bit</span>())</span>
  ]]></description>
   <category>Statistics</category>
   <category>Information Theory</category>
-  <guid>https://www.jack-bailey.co.uk/posts/shannon_regression/index.html</guid>
+  <guid>https://jack-bailey.co.uk/posts/shannon_regression/index.html</guid>
   <pubDate>Thu, 03 Aug 2023 23:00:00 GMT</pubDate>
 </item>
 </channel>
