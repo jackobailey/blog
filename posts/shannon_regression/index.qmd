@@ -61,7 +61,7 @@ $$
 p = 2^{-I}
 $$
 
-You might ask "why bother?". Basically every single advancement in the information age is one reason. Another is that doing yields nice properties that can be useful in certain contexts. Chief among them is that when probabilities are multiplicative, information is additive. For instance, the chance of guessing 1 head is $\frac{1}{2}$, 2 heads is $\frac{1}{2} \times \frac{1}{2} = \frac{1}{4}$, and 3 heads is $\frac{1}{2} \times \frac{1}{2} \times \frac{1}{2} = \frac{1}{8}$. The amount of information you'd need, on the other hand, is just 1 bit, 2 bits, and 3 bits.
+You might ask "why bother?". Basically every single advancement in the information age is one reason. Another is that doing so yields nice properties that can be useful in certain contexts. Chief among them is that when probabilities are multiplicative, information is additive. For instance, the chance of guessing 1 head is $\frac{1}{2}$, 2 heads is $\frac{1}{2} \times \frac{1}{2} = \frac{1}{4}$, and 3 heads is $\frac{1}{2} \times \frac{1}{2} \times \frac{1}{2} = \frac{1}{8}$. The amount of information you'd need, on the other hand, is just 1 bit, 2 bits, and 3 bits.
 
 This point is worth stressing: 1 bit of information if how much you'd need to guess a fair coin flip. And since information is additive, it follows that we can interpret it in terms of coin flips too.
 
