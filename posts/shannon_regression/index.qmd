@@ -204,7 +204,7 @@ The intercept tells us how many bits of information we would need to guess the o
 
 The treatment effect tells us how many additional bits of information we would need to guess the outcome for someone in the treatment group. The coefficient is `r round(coef(coin_model)[2], 2)`, again about 1 bit of information. When added to the intercept, this gives `r round(sum(coef(coin_model)), 2)`, or about 2 bits of information. Again, this makes sense. We gave those in the treatment group an unfair coin that landed heads side up with probability 0.25. So to guess it right, we'd need 2 bits of information, which is how much information it takes to guess the outcome of 2 fair coin flips since $\frac{1}{2} \times \frac{1}{2} = \frac{1}{4}$.
 
-At first, it might seem unusual that the treatment caused a *negative* change in the probability of getting a head but yielded a *positive* coefficient. But it's actually quite intuitive when you think about it in information theoretic terms: all we're doing is counting up coins. And since rarer events are akin to guessing more coin flips correctly, it's takes *more* bits of information to guess *less* frequent events.
+At first, it might seem unusual that the treatment caused a *negative* change in the probability of getting a head but yielded a *positive* coefficient. But it's actually quite intuitive when you think about it in information theoretic terms: all we're doing is counting up coins. And since rarer events are akin to guessing more coin flips correctly, it takes *more* bits of information to guess *less* frequent events.
 
 ## Conclusion
 
