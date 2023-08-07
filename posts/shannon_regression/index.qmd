@@ -15,6 +15,7 @@ execute:
   echo: false
 categories: [Statistics, Information Theory]
 draft: false
+image: shannon.jpg
 ---
 
 ```{r}
