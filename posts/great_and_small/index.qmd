@@ -1,0 +1,198 @@
+---
+title: "All Samples Great and Small"
+code-fold: false
+author:
+  - name: Jack Bailey
+    # url: https://example.com/norajones
+    # affiliation: Spacely Sprockets
+    # affiliation-url: https://example.com/spacelysprokets
+date: "2023-08-11"
+# date-modified: "5/23/2021"
+description: |
+  Sometimes macro and micro models are telling you the same thing
+freeze: true
+execute: 
+  echo: false
+categories: [Statistics]
+draft: true
+# image: shannon.jpg
+---
+
+We often split analysis into macro and micro. This is probably way of us to make sense of our data. I kind of conceptual tool to help us make sense of our data but in reality, the distinction between the two is less clear cut in this post I'm gonna go over some of the links between micro and macro modelsfor some people, they may seem obvious, but this is stuff that I was never taught and had to work out myself so hopefully it will save someone else the hassle.
+
+## Proof by Simulation
+
+First, we'll use `tidyverse` to simulate some data. Next, we'll then use `brms` to fit our models. Then, we'll use `modelsummary` to check that they're doing what we expect.
+
+```{r}
+#| label: setup
+#| echo: true
+#| message: false
+
+# Load packages
+
+library(tidyverse)
+library(brms)
+library(modelsummary)
+```
+
+```{r}
+#| label: simulation
+#| echo: true
+
+# Set simulation parameters
+
+n <- 100
+t <- 100
+a <- 0
+b <- 1
+
+
+# Create tibble of voters
+
+bern_dta <- 
+  expand_grid(
+    time = 1:t,
+    voter = 1:n
+  )
+
+
+# Simulate GDP data and varying intercept for each time point
+
+bern_dta <- 
+  bern_dta |> 
+  group_by(time) |> 
+  mutate(
+    gdp = rnorm(1, 0, 1),
+    a_t = rnorm(1, 0, 0.1)
+    ) |> 
+  ungroup()
+
+
+# Create inverse logit function to convert logits to probabilities
+
+inv_logit <- function(x){
+  p <- 1/(1 + exp(-x))
+  p <- ifelse(x == Inf, 1, p)
+  p
+}
+
+
+# Simulate vote choice
+
+bern_dta <- 
+  bern_dta |> 
+  mutate(
+    vote = 
+      rbinom(
+        n = n*t,
+        size = 1,
+        prob = jbmisc::inv_logit(a + a_t + b * gdp)
+      )
+  )
+
+```
+
+```{r}
+#| label: datasets
+#| echo: true
+
+# Create bernoulli, binomial, and beta versions of the data
+
+binom_dta <- 
+  bern_dta |> 
+  group_by(time) |> 
+  summarise(
+    trials = n(),
+    success = sum(vote),
+    gdp = unique(gdp)
+  )
+
+beta_dta <- 
+  bern_dta |> 
+  group_by(time) |> 
+  summarise(
+    vote = mean(vote),
+    gdp = unique(gdp)
+  )
+
+```
+
+```{r}
+#| label: models
+#| echo: true
+#| message: false
+#| warning: false
+#| error: false
+#| output: false
+
+# Fit model to Bernoulli data
+
+bern_mod <- 
+  brm(
+    formula = vote ~ 1 + gdp + (1 | time),
+    family = bernoulli(link = "logit"),
+    prior = 
+      prior(normal(0, 1.5), class = "Intercept") +
+      prior(normal(0, 0.5), class = "b") +
+      prior(exponential(2), class = "sd"),
+    data = bern_dta,
+    cores = 2,
+    chains = 2
+  )
+
+
+# Fit model to binomial data
+
+binom_mod <- 
+  brm(
+    formula = success | trials(trials) ~ 1 + gdp + (1 | time),
+    family = binomial(link = "logit"),
+    prior = 
+      prior(normal(0, 1.5), class = "Intercept") +
+      prior(normal(0, 0.5), class = "b") +
+      prior(exponential(2), class = "sd"),
+    data = binom_dta,
+    cores = 2,
+    chains = 2
+  )
+
+
+# Fit model to beta data
+
+beta_mod <- 
+  brm(
+    formula = vote ~ 1 + gdp + (1 | time),
+    family = Beta(link = "logit"),
+    prior = 
+      prior(normal(0, 1.5), class = "Intercept") +
+      prior(normal(0, 0.5), class = "b") +
+      prior(exponential(2), class = "sd") +
+      prior(gamma(0.01, 0.01), class = "phi"),
+    data = beta_dta,
+    cores = 2,
+    chains = 2
+  )
+
+```
+
+```{r}
+#| label: summary
+#| echo: false
+
+modelsummary(
+  models =
+    list(
+      "Bernoulli" = bern_mod,
+      "Binomial" = binom_mod,
+      "Beta" = beta_mod
+      ),
+  gof_map = NA,
+  metrics = NA,
+  coef_map = 
+    c(
+      "b_Intercept" = "Intercept",
+      "b_gdp" = "GDP"
+      )
+  )
+```

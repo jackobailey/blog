@@ -7,9 +7,9 @@ author:
     # affiliation: Spacely Sprockets
     # affiliation-url: https://example.com/spacelysprokets
 date: "2023-08-04"
-# date-modified: "5/23/2021"
+date-modified: "2023-08-05"
 description: |
-  An Information Theoretic Alternative to Logistic and Probit Regression for Binary Outcomes
+  An information theoretic alternative to logistic and probit regression for binary outcomes
 freeze: true
 execute: 
   echo: false
