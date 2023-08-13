@@ -6,7 +6,7 @@ website:
   title: "Jack Bailey"
   site-url: https://www.jack-bailey.co.uk
   description: "Dr Jack Bailey, Political Scientist"
-  google-analytics: G-M077RNV9CB
+  google-analytics: "G-M077RNV9CB"
   navbar:
     right:
       - about.qmd
