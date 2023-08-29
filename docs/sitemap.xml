@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9">
   <url>
+    <loc>https://jack-bailey.co.uk/posts/red_shift/index.html</loc>
+    <lastmod>2023-08-29T17:15:53.187Z</lastmod>
+  </url>
+  <url>
     <loc>https://jack-bailey.co.uk/posts/shannon_regression/index.html</loc>
-    <lastmod>2023-08-13T10:32:03.620Z</lastmod>
+    <lastmod>2023-08-29T17:15:55.084Z</lastmod>
   </url>
   <url>
     <loc>https://jack-bailey.co.uk/index.html</loc>
-    <lastmod>2023-08-13T10:32:04.502Z</lastmod>
+    <lastmod>2023-08-29T17:15:56.123Z</lastmod>
   </url>
   <url>
     <loc>https://jack-bailey.co.uk/about.html</loc>
-    <lastmod>2023-08-13T10:32:04.773Z</lastmod>
+    <lastmod>2023-08-29T17:15:56.400Z</lastmod>
   </url>
 </urlset>

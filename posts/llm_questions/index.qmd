@@ -1,0 +1,67 @@
+---
+title: "Using LLMs to Write Multi-Item Survey Questions"
+code-fold: false
+author:
+  - name: Jack Bailey
+    # url: https://example.com/norajones
+    # affiliation: Spacely Sprockets
+    # affiliation-url: https://example.com/spacelysprokets
+date: "2023-08-16"
+# date-modified: "2023-08-16"
+description: |
+  Large language models are sophisticated enough to write compelling survey questions
+freeze: true
+execute: 
+  echo: false
+categories: [Large Language Models, Survey Methods]
+draft: true
+# image: shannon.jpg
+---
+
+Some colleagues and I have [a paper under review](https://papers.ssrn.com/sol3/papers.cfm?abstract_id=4310154) where we use large language models to code open-text data. Turns out they're really good at it, even approaching human-level capabilities in some cases.
+
+Naturally, my mind has wandered since working on the paper and I've been trying to think of other ways to integrate LLMs into the political survey pipeline.
+
+One obvious use case is in measuring social scientific concepts. Often, we do this using survey questions. And often -- at least in my view -- we don't do a very good job. Not because our wording is bad or leads to bias (though sometimes it does). Rather, because we measure so many concepts using only single-item scales that don't let us separate signal and noise. Better, instead, would be to measure these items with multi-item scales that let us partial out any measurement error.
+
+The problem is that writing multi-item scales that do this is really hard. In fact, it's much harder than writing single item ones, since all of the items have to work well together. So why not have an LLM do it for us? What follows is some initial exploration to this end.
+
+## The Prompt
+
+::: {#prompt .callout-note}
+## Multi-Item Scale Prompt
+
+Your brief is to create a multi-item scale to measure \[concept\] in a \[field\] survey in \[country\]. By \[concept\], I mean \[definition\].
+
+The scale should comprise five questions. Each question should use the same five-point answer scale, which runs from "strongly agree" to "strongly disagree", though you do not need to mention the scale. Make sure to reverse-code questions 4 and 5 so that agreeing with them indicates a lack of \[concept\]. Make sure that the questions are also easy to understand and do not include direct references to \[concept\] or other similar words.
+
+Write the question wording for the five items.
+:::
+
+The text above shows the prompt that I've developed so far. Each sentence performs a different task, so let's break them down one-by-one.
+
+> **Sentence 1:** Your brief is to create a multi-item scale to measure \[concept\] in a \[field\] survey in \[country\].
+
+Make clear task. Specify concept and context \[field, country\]. Don't want gun rights if we're measuring conservatism in the UK.
+
+> **Sentence 2:** By \[concept\], I mean \[definition\].
+
+Make concept as clear as possible, avoid unrelated stuff.
+
+> **Sentences 3-4:** The scale should comprise five questions. Each question should use the same five-point answer scale, which runs from "strongly agree" to "strongly disagree", though you do not need to mention the scale.
+
+Make clear number of questions for LLM to generate. Make clear response scale should be the same, what it should be. Note does not need to mention it to avoid verbose response.
+
+> **Sentence 5:** Make sure to reverse-code questions 4 and 5 so that agreeing with them indicates a lack of \[concept\].
+
+Avoid acquiescence bias (better measurement).
+
+> **Sentence 6:** Make sure that the questions are also easy to understand and do not include direct references to \[concept\] or other similar words.
+
+Avoid complex topics. Prevent questions that refer to topic at hand explicitly.
+
+## Generating Multi-Item Scales
+
+To test the prompt, we'll need some examples. Let's use one from psychology, one from sociology, and one from political science. In all cases, we'll assume that we're running a survey in Britain and we'll take our definitions from Wikipedia.
+
+Let's get ChatGPT to write a multi-item scale to measure depression. Below is the prompt that I input and the response from ChatGPT.

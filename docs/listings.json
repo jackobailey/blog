@@ -2,6 +2,7 @@
   {
     "listing": "/index.html",
     "items": [
+      "/posts/red_shift/index.html",
       "/posts/shannon_regression/index.html"
     ]
   }

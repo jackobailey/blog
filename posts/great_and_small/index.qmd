@@ -18,11 +18,19 @@ draft: true
 # image: shannon.jpg
 ---
 
-We often split analysis into macro and micro. This is probably way of us to make sense of our data. I kind of conceptual tool to help us make sense of our data but in reality, the distinction between the two is less clear cut in this post I'm gonna go over some of the links between micro and macro modelsfor some people, they may seem obvious, but this is stuff that I was never taught and had to work out myself so hopefully it will save someone else the hassle.
+Back in the 1980s, there was a [big debate](http://www.jstor.org/stable/1956013) in economic voting research. The premise was simple: should we test our theories using individual-level data from surveys or should we use aggregate-level data from polls and elections instead? In the end, proponents of using individual-level data won out. So nowadays most economic voting research tests its theories using social survey data.
 
-## Proof by Simulation
+This debate reflects a common practice in political science: that we often draw a clear conceptual distinction between micro- and macro-data. The main reason why we do this is to avoid [the ecological fallacy](https://en.wikipedia.org/wiki/Ecological_fallacy). All told, the ecological fallacy is a massive pain in the ass. But, thankfully, it only applies in certain cases. So sometimes it's perfectly possible to derive individual-level inferences from aggregate-level data.
 
-First, we'll use `tidyverse` to simulate some data. Next, we'll then use `brms` to fit our models. Then, we'll use `modelsummary` to check that they're doing what we expect.
+In this post, I'm going to show you one case where we can use aggregate data to make individual-level inferences. To some, the details I present might seem obvious. But this is stuff that I was never taught and had to work out the hard way. Hopefully, by writing it up, I can save someone else the hassle.
+
+## Simulation: 100 Countries of 100 Voters
+
+To cut a long story short, you're in the clear to make individual-level inferences from aggregate data if your predictor is at the same or a higher level of aggregation than your outcome. Let's build up a toy example to demonstrate this. To keep things simple, we'll stick to the economic voting example from above.
+
+Imagine a world with 100 countries, each comprised of 100 voters. Each country is a democracy with its own small economy. What we want to do is predict how likely someone is to vote for the incumbent party given recent economic change and any other quirks that the country might have.
+
+Let's simulate what we know so far.
 
 ```{r}
 #| label: setup
@@ -33,40 +41,56 @@ First, we'll use `tidyverse` to simulate some data. Next, we'll then use `brms` 
 
 library(tidyverse)
 library(brms)
+library(tictoc)
 library(modelsummary)
-```
-
-```{r}
-#| label: simulation
-#| echo: true
-
-# Set simulation parameters
-
-n <- 100
-t <- 100
-a <- 0
-b <- 1
 
 
-# Create tibble of voters
+# Set number of voters and countries
+
+n_voters <- 100
+n_countries <- 100
+
+
+# Create tibble of voters nested in countries
 
 bern_dta <- 
   expand_grid(
-    time = 1:t,
-    voter = 1:n
+    voter = 1:n_voters,
+    country = 1:n_countries
   )
 
 
-# Simulate GDP data and varying intercept for each time point
+# Simulate country-level GDP change and "quirks" (i.e. varying intercepts)
 
 bern_dta <- 
   bern_dta |> 
-  group_by(time) |> 
+  group_by(country) |> 
   mutate(
     gdp = rnorm(1, 0, 1),
-    a_t = rnorm(1, 0, 0.1)
+    a_c = rnorm(1, 0, 0.1)
     ) |> 
   ungroup()
+
+```
+
+Given this, our next task is to work out whether each voter in each country did (1) or did not (0) vote for the incumbent party at the election. We'll do this as a function of three parameters:
+
+1.  The intercept, $\alpha$, which we'll fix to 0
+
+2.  The economic voting effect, $\beta$, which we'll fix to 1
+
+3.  Each country's random intercept, $\alpha_{c[i]}$, which we simulated above
+
+Doing so is pretty easy. All we have to do is convert everything from logits into probabilities (using the inverse logit function) then plug the resulting values into `rbinom()`:
+
+```{r}
+#| label: sim-bern
+#| echo: true
+
+# Set model parameters
+
+a <- 0
+b <- 1
 
 
 # Create inverse logit function to convert logits to probabilities
@@ -85,38 +109,73 @@ bern_dta <-
   mutate(
     vote = 
       rbinom(
-        n = n*t,
+        n = n_voters * n_countries,
         size = 1,
-        prob = jbmisc::inv_logit(a + a_t + b * gdp)
+        prob = inv_logit(a + a_c + b * gdp)
       )
   )
 
 ```
 
+Before we aggregate the data, let's take a moment to look at our data:
+
 ```{r}
-#| label: datasets
+#| label: data-peek
+#| echo: false
+
+bern_dta
+
+```
+
+As you can see, each row represents an individual `voter` nested in a particular `country`. Each country has its own `gdp` figure, plus some "quirks" that make its voters more or less likely to vote for the incumbent (the varying intercepts, `a_c`). The `vote` column then records if each voter did (1) or did not (0) vote for the incumbent party.
+
+But, given that our predictor variable (`gdp`) only varies at the country level, there are other ways that we could format this data. And each lends itself to a different mode of analysis. At the moment, our data are formatted as a series of [Bernoulli trials](https://en.wikipedia.org/wiki/Bernoulli_distribution) (hence the name `bern_dta`). That is, they can take a value of either 0 or 1. But we could reformat the data to fit [a Binomial distribution](https://en.wikipedia.org/wiki/Binomial_distribution) instead. To do this, we convert it into a series of trials (the number of voters in each country) and successes (the number of voters in each country that voted for the incumbent):
+
+```{r}
+#| label: binomial
 #| echo: true
 
-# Create bernoulli, binomial, and beta versions of the data
+# Convert data from a series of Bernoulli trials into binomial format
 
 binom_dta <- 
   bern_dta |> 
-  group_by(time) |> 
+  group_by(country) |> 
   summarise(
     trials = n(),
     success = sum(vote),
     gdp = unique(gdp)
   )
 
+
+# Take a peek at the data to demonstrate how it has changed
+
+binom_dta
+```
+
+Another, more common, way of aggregating data like this is to divide the successes (the number of voters in each country that voted for the incumbent) by the trials (the number of voters in each country). This gives the proportion of voters in each country who voted for the incumbent and reflects the kind of data we might observe from [a beta distribution](https://en.wikipedia.org/wiki/Beta_distribution):
+
+```{r}
+#| label: beta
+#| echo: true
+
+# Convert data from a series of Bernoulli trials into beta format
+
 beta_dta <- 
   bern_dta |> 
-  group_by(time) |> 
+  group_by(country) |> 
   summarise(
     vote = mean(vote),
     gdp = unique(gdp)
   )
 
+# Take a peek at the data again to demonstrate how it has changed
+
+beta_dta
 ```
+
+## Modelling: Sometimes There Are No Ecological Problems
+
+Now that we have our data, we can show that models at different levels of aggregation all produce identical inferences. Since we have data formatted as coming from different distributions and need to use varying intercepts in all cases, we'll model our data using [the `brms` package](#%20Take%20a%20peek%20at%20the%20data%20to%20demonstrate%20how%20it%20has%20changed%20binom_dta). We'll also time everything with the `tictoc` package too:
 
 ```{r}
 #| label: models
@@ -128,11 +187,13 @@ beta_dta <-
 
 # Fit model to Bernoulli data
 
-bern_mod <- 
+tic()
+
+bern_mod <-
   brm(
-    formula = vote ~ 1 + gdp + (1 | time),
+    formula = vote ~ 1 + gdp + (1 | country),
     family = bernoulli(link = "logit"),
-    prior = 
+    prior =
       prior(normal(0, 1.5), class = "Intercept") +
       prior(normal(0, 0.5), class = "b") +
       prior(exponential(2), class = "sd"),
@@ -141,14 +202,18 @@ bern_mod <-
     chains = 2
   )
 
+bern_time <- toc()
+
 
 # Fit model to binomial data
 
-binom_mod <- 
+tic()
+
+binom_mod <-
   brm(
-    formula = success | trials(trials) ~ 1 + gdp + (1 | time),
+    formula = success | trials(trials) ~ 1 + gdp + (1 | country),
     family = binomial(link = "logit"),
-    prior = 
+    prior =
       prior(normal(0, 1.5), class = "Intercept") +
       prior(normal(0, 0.5), class = "b") +
       prior(exponential(2), class = "sd"),
@@ -157,14 +222,18 @@ binom_mod <-
     chains = 2
   )
 
+binom_time <- toc()
+
 
 # Fit model to beta data
 
-beta_mod <- 
+tic()
+
+beta_mod <-
   brm(
-    formula = vote ~ 1 + gdp + (1 | time),
+    formula = vote ~ 1 + gdp + (1 | country),
     family = Beta(link = "logit"),
-    prior = 
+    prior =
       prior(normal(0, 1.5), class = "Intercept") +
       prior(normal(0, 0.5), class = "b") +
       prior(exponential(2), class = "sd") +
@@ -173,6 +242,8 @@ beta_mod <-
     cores = 2,
     chains = 2
   )
+
+beta_time <- toc()
 
 ```
 
@@ -189,7 +260,7 @@ modelsummary(
       ),
   gof_map = NA,
   metrics = NA,
-  coef_map = 
+  coef_map =
     c(
       "b_Intercept" = "Intercept",
       "b_gdp" = "GDP"
