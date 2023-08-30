@@ -1,0 +1,19 @@
+/*-- scss:defaults --*/
+
+// import fonts
+
+@import url(https://fonts.googleapis.com/css?family=Cabin:400,700,400italic,700italic);
+
+// set font
+
+$font-family-sans-serif: Cabin, sans-serif !default;
+
+
+/*-- scss:rules --*/
+
+// Customise headers
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: Cabin;
+  font-weight: 100
+}

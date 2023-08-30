@@ -24,12 +24,12 @@ website:
   #   creator: "@PoliSciJack"
 format:
   html:
-    theme: united
+    theme:
+      - united
+      - custom.scss
     mainfont: Cabin
     fontcolor: "#111111"
     css: styles.css
-    header-includes: |
-      <link rel="stylesheet" media="screen" href="https://fontlibrary.org//face/cabin" type="text/css"/>
 
 editor: visual
 
