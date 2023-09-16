@@ -2,14 +2,14 @@
 
 // import font
 
-@import url(https://fonts.googleapis.com/css?family=Cabin);
-@import url(https://fonts.googleapis.com/css?family=Fira+Mono);
+@import url(https://fonts.googleapis.com/css?family=Cabin:400,700,400italic,700italic);
+@import url(https://fonts.googleapis.com/css?family=Fira+Mono:400,500,700);
 
 
 // set main font
 
 $font-family-sans-serif: Cabin, sans-serif !default;
-$font-family-monospace: Fire Mono, !default;
+$font-family-monospace: Fira Mono, mono !default;
 
 /*-- scss:rules --*/
 
