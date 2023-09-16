@@ -1,19 +1,19 @@
 /*-- scss:defaults --*/
 
-// import fonts
+// import font
 
-@import url(https://fonts.googleapis.com/css?family=Cabin:400,700,400italic,700italic);
-@import url(https://fonts.googleapis.com/css?family=Fira+Mono:300,400,500,600,700);
+@import url(https://fonts.googleapis.com/css?family=Cabin);
+@import url(https://fonts.googleapis.com/css?family=Fira+Mono);
 
-// set font
+
+// set main font
 
 $font-family-sans-serif: Cabin, sans-serif !default;
-$font-family-monospace: Fira Mono !default;
-$primary: #FF4136;
+$font-family-monospace: Fire Mono, !default;
 
 /*-- scss:rules --*/
 
-// Customise headers
+// Customise header fonts
 
 h1, h2, h3, h4, h5, h6 {
   font-family: Cabin;

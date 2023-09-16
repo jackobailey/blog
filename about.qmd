@@ -17,7 +17,7 @@ about:
 
 Hi, I'm Jack Bailey.
 
-I'm a political scientist and Lecturer in Quantitative Politics at [the University of Manchester](https://www.socialsciences.manchester.ac.uk/politics/) in the UK.
+I'm a political scientist and Lecturer in Quantitative Political Science at [the University of Manchester](https://www.socialsciences.manchester.ac.uk/politics/) in the UK.
 
 My research has three aims. First, to understand [how economics affects voting behaviour](https://en.wikipedia.org/wiki/Economic_voting). Second, to study [how politics differs across time and space](https://en.wikipedia.org/wiki/Comparative_politics). And, third, to [improve political methods](https://en.wikipedia.org/wiki/Political_methodology).
 
